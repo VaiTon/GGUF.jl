@@ -1,0 +1,14 @@
+name = "GGUF"
+uuid = "5f962d20-b188-42cd-ac61-1de1c6f06d13"
+authors = ["VaiTon <eyadlorenzo@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
+StringViews = "354b36f9-a18e-4713-926e-db85100087ba"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
