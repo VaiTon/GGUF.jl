@@ -77,11 +77,6 @@ function read_tensors_info(m::MmappedModel, offset::UInt64)
     return infos, offset
 end
 
-function tensors_info(m::MmappedModel)
-    _, offset = read_metadata(m, HEADER_OFFSET)  # metadata offset
-    info, _ = read_tensors_info(m, offset)
-    return info
-end
 
 function Base.show(io::IO, _::MIME"text/plain", m::TensorInfo)
     println(io, "TensorInfo")
@@ -92,13 +87,18 @@ function Base.show(io::IO, _::MIME"text/plain", m::TensorInfo)
 end
 
 """
-    tensors_info(m::Model)
+    tensorsinfo(m::Model)
 
 Returns the tensor information for the given model.
 """
-tensors_info(m::Model) = tensors_info(m.data)
+function tensorsinfo(m::MmappedModel)
+    _, offset = read_metadata(m, HEADER_OFFSET)  # metadata offset
+    info, _ = read_tensors_info(m, offset)
+    return info
+end
+tensorsinfo(m::Model) = tensorsinfo(m.data)
 
-export TensorInfo, tensors_info
+export TensorInfo, tensorsinfo
 
 function tensors_offset(m::MmappedModel)
     _, offset = read_metadata(m, HEADER_OFFSET)  # metadata offset
@@ -180,7 +180,7 @@ end
 Returns the [Tensor](@ref)s for the given model.
 """
 function tensors(m::Model)
-    infos = tensors_info(m)
+    infos = tensorsinfo(m)
     tensors = Vector{Tensor}(undef, length(infos))
 
     @simd for i in eachindex(infos)

@@ -100,6 +100,5 @@ end
 
 include("tensor.jl")
 include("metadata.jl")
-include("tensor.jl")
 
 end # module GGUF

@@ -13,7 +13,7 @@ open_model
 tensorn
 tensors
 
-tensors_info
+tensorsinfo
 
 metadatan
 metadata
