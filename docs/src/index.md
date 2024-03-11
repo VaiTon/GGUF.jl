@@ -1,5 +1,11 @@
 # Index
 
+## How to
+
+```
+julia>] add https://github.com/VaiTon/GGUF.jl
+```
+
 
 ## Example 
 
