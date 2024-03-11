@@ -8,7 +8,7 @@ CurrentModule = GGUF
 ```@docs
 
 Model
-open_model
+open
 
 tensorn
 tensors
