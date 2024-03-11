@@ -20,7 +20,11 @@ function read_metadata(m::MmappedModel, offset::UInt64)
 end
 
 
+""" 
+Represents the type of a metadata value. 
 
+See [`metadata`](@ref) for more information.
+"""
 @enum MetadataValueType::UInt32 begin
     # The value is a 8-bit unsigned integer.
     GGUF_METADATA_VALUE_TYPE_UINT8 = 0
@@ -120,7 +124,31 @@ function read_metadata_value_type(m::MmappedModel, offset::UInt64)
     return type, offset
 end
 
+"""
+    metadata(m::Model)
 
+Returns the metadata of the given model. 
+
+The metadata is a dictionary with the keys being the metadata keys and the values being the metadata values.
+
+The metadata values can be of the following types:
+- UInt8
+- UInt16
+- UInt32
+- UInt64
+- Int8
+- Int16
+- Int32
+- Int64
+- Float32
+- Float64
+- Bool
+- String
+- Array of the above types
+
+Types are defined in the [`MetadataValueType`](@ref) enum.
+
+"""
 function metadata(m::MmappedModel)
     offset = UInt64(25)
     meta, offset = read_metadata(m, offset)

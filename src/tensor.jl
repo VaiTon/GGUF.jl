@@ -1,3 +1,7 @@
+
+"""
+Represents the type of a tensor in a model.
+"""
 @enum TensorType::UInt32 begin
     GGML_TYPE_F32 = 0
     GGML_TYPE_F16 = 1
@@ -22,6 +26,16 @@
 end
 
 
+"""
+Represents the information associated with a tensor in a model.
+
+# Fields
+- `name::StringView`: The name of the tensor.
+- `ndimensions::UInt32`: The number of dimensions of the tensor.
+- `dimensions::Vector{UInt64}`: The dimensions of the tensor.
+- `type::TensorType`: The type of the tensor.
+
+"""
 struct TensorInfo
     name::StringView
     ndimensions::UInt32
@@ -65,12 +79,23 @@ end
 
 function tensors_info(m::MmappedModel)
     _, offset = read_metadata(m, HEADER_OFFSET)  # metadata offset
-    info, offset = read_tensors_info(m, offset)
+    info, _ = read_tensors_info(m, offset)
     return info
 end
 
+function Base.show(io::IO, _::MIME"text/plain", m::TensorInfo)
+    println(io, "TensorInfo")
+    println(io, "  Name: $(m.name)")
+    println(io, "  Dimensions: $(m.ndimensions)")
+    println(io, "  Type: $(m.type)")
+    println(io, "  Offset: $(m.offset)")
+end
 
+"""
+    tensors_info(m::Model)
 
+Returns the tensor information for the given model.
+"""
 tensors_info(m::Model) = tensors_info(m.data)
 
 export TensorInfo, tensors_info
@@ -82,7 +107,7 @@ function tensors_offset(m::MmappedModel)
     offset
 end
 
-function read_tensor(m::Model, info::TensorInfo)
+function read_tensor_value(m::Model, info::TensorInfo)
     offset = m.tensor_offset + info.offset
 
     if info.type == GGML_TYPE_F32
@@ -123,4 +148,50 @@ function read_tensor(m::Model, info::TensorInfo)
 
     throw(ArgumentError("Unknown tensor type: $info.type"))
 end
+
+
+"""
+Represents a tensor in a model.
+"""
+struct Tensor{T}
+    info::TensorInfo
+    data::T
+end
+
+function read_tensor(model::Model, info::TensorInfo)
+    return Tensor(info, read_tensor_value(model, info))
+end
+
+function Base.show(io::IO, _::MIME"text/plain", t::Tensor)
+    println(io, "Tensor")
+    println(io, "  Name: $(t.info.name)")
+    println(io, "  Dimensions: $(t.info.ndimensions)")
+    println(io, "  Type: $(t.info.type)")
+    println(io, "  Data: $(t.data)")
+end
+
+function Base.show(io::IO, t::Tensor)
+    print(io, "Tensor($(t.info), $(t.data))")
+end
+
+"""
+    tensors(m::Model)
+
+Returns the [Tensor](@ref)s for the given model.
+"""
+function tensors(m::Model)
+    infos = tensors_info(m)
+    tensors = Vector{Tensor}(undef, length(infos))
+
+    @simd for i in eachindex(infos)
+        tensors[i] = read_tensor(m, infos[i])
+    end
+
+    return tensors
+end
+
+info(t::Tensor) = t.info
+data(t::Tensor) = t.data
+
+export Tensor, tensors, info, data
 
